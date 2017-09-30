@@ -154,7 +154,13 @@ Reduce number of records or attributes. Reduced dataset should be representative
 	* For categorical features
 	* Measure the information that feature X and class Y share
 	* How much does knowing one of the attributes reduce uncertainty about the other?
-		* MI(x, y) = sum_x sum_y p(x, y) * log (p(x, y) / (p(x) * p(y)))
+
+
+```
+// When x, y are indenpendent, p(x, y) = P(x) * p (y), MI(x, y) = 0
+MI(x, y) = sum_x sum_y p(x, y) * log (p(x, y) / (p(x) * p(y)))
+```
+
 * Fisher score
 * Pricinpal Component Analysis (PCA)
 	* Task
