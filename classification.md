@@ -92,4 +92,85 @@
 * Recall(K) = |TP| / (|TP| + |FN|)
 * There is a trade-off between precision and recall
 * Therefore, we also define a measure combining precision and recall
-	* F-Measure(K) = 2 * Precision(K) * Recall(K) / (Precision(K)+Recall(K))
+	* F-Measure(K) = 2 * Precision(K) * Recall(K) / (Precision(K) + Recall(K))
+	* F-Measure captures only one of the possible trade-offs between precision and recall
+
+### ROC Curves
+* Receiver Operating Characteristic Curve
+	* Curve: plots true positive rate vs. false positive rate
+		* True positive rate: percentage of positive data correctly predicted
+		* False positive rate: percentage of negative data falsely predicted as positive
+	* Area under ROC as quantitative measure ideally = 1
+
+### Model Selection
+* Which of classifier is really better?
+	* Naive approach: just take the one with higher mean classification accuracy
+		* But classification accuracy may vary greatly among the m folds
+		* Differences in classification accuracies may be insignificant due only to chance
+* We measure the classification on a small test dataset O belongs to D
+	* Questions: 
+		* How to estimate the true classification error on the whole data space D?
+		* How does the deviation from the observed classification error depend on the size of the test set.
+* Random experiment to determine the classification error on test set (of size n): repeat n times
+	* Draw random object from D
+	* Compare predicted vs. actual class label for this object
+* Classification error is percentage of misclassified objects
+	* Observed classification error follows a Binomial distribution with mean = true classification error.
+
+## Decision Trees
+* Disjunction of conjunction of attribute constraints
+* Hierarchical structure
+* A decision tree is a tree with the following properties:
+	* An inner node represents an attribute
+	* An edge represents a test on the attribute of the parent node
+	* A leaf represents one of the classes of C
+* Construction of a decision tree
+	* Based on the training data
+	* Top-Down strategy
+* Application of a decision tree
+	* Traversal of decision tree from the root to one of the leaves
+	* Unique path
+		* Assignment of the object to class of the resulting leaf
+
+### Base Algorithm
+* Initially, all training data objects belongs to the root
+* Next attribute is selected and split
+* Training data objects are partitioned according to the chosen split
+* Method is applied recursively to each partition
+	* Local optimization method (greedy)
+* Termination conditions
+	* No more split attributes
+	* All (or most) training data objects of the node belong to the same class
+
+### Types of Splits
+* Categorical attributes
+	* Conditions of the form "attribute = a" or "attribute in set"
+* Numerical attributes
+	* Conditions of the form "attribute < a"
+	* Many possible split points
+
+### Quality Measures for Splits
+* Given
+	* Set T of training data objects
+* Wanted
+	* Measure of the impurity of any set S of labeled data w.r.t. class labels based on the p_i, the relative frequency of class c_i in S
+	* Split of T in T_1, T_2, ..., T_m minimizing this impurity measure. Split is a partitioning, i.e. a disjoint cover of T.
+		* Information gain, gini-index
+
+### Information Gain
+* Entropy: minimal number of bits to encode a message to transmit the class of a random training data object.
+* Entropy for a set T of training objects:
+	* entropy(T) = sum_{i=1}^k p_i * log_2(p_i);
+		* entropy(T) = 0, if p_i = 1 for some i
+		* entropy(T) = 1 for k = 2 classes with p_i = 1/2
+* Let attribute A produce the partitioning T1, T2, ..., Tm of T
+* The information gain of attribute A w.r.t. is defined as 
+	* InformationGain(T, A) = entropy(T) - sum (|Ti|/|T|)*entropy(T_i)
+
+### Gini-Index
+* Gini index for a set T of training data objects
+	* low gini index -> low impurity
+	* high gini index -> high impurity
+* Let attribute A produce the partitioning T_1, T_2, ..., Tm of T
+* Gini index of attribute A w.r.t. T is defined as 
+	* gini_A(T) = sum |T_i| / |T| * gini(T_i)
