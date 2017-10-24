@@ -174,3 +174,12 @@
 * Let attribute A produce the partitioning T_1, T_2, ..., Tm of T
 * Gini index of attribute A w.r.t. T is defined as 
 	* gini_A(T) = sum |T_i| / |T| * gini(T_i)
+
+### Overfitting
+### Approaches to Avoid Overfitting
+#### Choice of appropriate minimum confidence
+#### Subsequent pruning of the decision tree
+### Error Reduction-Pruning
+### Minimal Cost Complexity Pruning
+
+## Logistic Regression
