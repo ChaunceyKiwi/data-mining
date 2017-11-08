@@ -4,6 +4,7 @@ library(caret)
 library(ROCR)
 library(Metrics)
 library(randomForest)
+library('e1071')
 setwd("/Users/Chauncey/Workspace/data-mining/coding") # set working directory
 
 ############################ Data preprocessing ########################################################
@@ -34,8 +35,8 @@ test_data$survived = factor(test_data$survived)
 # Task 1, the size of tree is 13
 # Task 2, the most important five attributes: sex, pclass, fare, age, sibsp
 decision_tree = tree(survived~., data = training_data)
-# print(decision_tree)
-# print(summary(decision_tree))
+print(decision_tree)
+print(summary(decision_tree))
 plot(decision_tree); text(decision_tree)
 
 # Task 3
@@ -52,15 +53,15 @@ predict_res_bi = round(predict_res)
 confusion_matrix = confusionMatrix(data = predict_res_bi, reference = test_data$survived) # 0.8206
 
 # Convert factor back to numeric to enable prediction
-## predict_res = as.numeric(as.character(predict_res))
 actual_value = as.numeric(as.character(test_data$survived))
 pr = prediction(predict_res, actual_value)
+print(paste0("Accuracy: ", mean(predict_res_bi == actual_value))) # 0.8206
 predit_preformance = performance(pr, measure = "tpr", x.measure = "fpr")
 plot(predit_preformance, main = "ROC Curve for pruned decision tree")
 print(paste0("AUC: ", auc(test_data$survived, predict_res))) # AUC = 0.81289
 
 # Task 5
-random_forest = randomForest(survived~., data = training_data, nTree = 0)
+random_forest = randomForest(survived~., data = training_data, nTree = 100)
 random_forest_predict = predict(random_forest, test_data, type = "prob")
 random_forest_predict = random_forest_predict[, 2]
 random_forest_predict_bi = round(random_forest_predict)
@@ -70,13 +71,20 @@ predit_preformance2 = performance(pr, measure = "tpr", x.measure = "fpr")
 plot(predit_preformance2, main = "ROC Curve for random_forest with size 100")
 print(paste0("AUC: ", auc(test_data$survived, random_forest_predict))) # AUC = 0.8934436
 
-# # Task 6
-# random_forest = randomForest(survived~., data = training_data, nTree = 120)
-# random_forest_predict = predict(random_forest, test_data, type = "class")
-# print(mean(random_forest_predict == actual_value))
+# Task 6
+random_forest = randomForest(survived~., data = training_data, nTree = 150)
+random_forest_predict = predict(random_forest, test_data, type = "prob")
+random_forest_predict = random_forest_predict[, 2]
+random_forest_predict_bi = round(random_forest_predict)
+print(paste0("Accuracy: ", mean(random_forest_predict_bi == actual_value))) # 0.8053435
+pr = prediction(random_forest_predict, actual_value)
+predit_preformance2 = performance(pr, measure = "tpr", x.measure = "fpr")
+plot(predit_preformance2, main = "ROC Curve for random_forest with size 150")
+print(paste0("AUC: ", auc(test_data$survived, random_forest_predict))) # AUC = 0.8934436
 
-# # Task 7 
-# # sex, fare, age, pclass, sibsp
-# # attributes are the same compared with attributes selected in task2
-# imp = importance(random_forest)
-# imp_plot = varImpPlot(random_forest)
+# Task 7
+# sex, fare, age, pclass, sibsp
+# attributes chosen are the same compared with 
+# attributes selected in task2, but the order is different
+imp = importance(random_forest)
+imp_plot = varImpPlot(random_forest)
