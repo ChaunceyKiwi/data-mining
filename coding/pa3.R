@@ -64,16 +64,28 @@ predit_preformance = performance(pr, measure = "tpr", x.measure = "fpr")
 plot(predit_preformance, main = "ROC Curve for pruned decision tree")
 print(paste0("AUC: ", auc(test_data$survived, predict_res))) # AUC = 0.835386029411765
 
-# Task 5, 6
+# Task 5
 # num = 100, accuracy = 0.8053435, AUC = 0.8896752
-# num = 95, accuracy = 
+set.seed(1)
+random_forest = randomForest(survived~., data = training_data, ntree = 100)
+random_forest_predict = predict(random_forest, test_data, type = "prob")
+random_forest_predict = random_forest_predict[, 2]
+random_forest_predict_bi = round(random_forest_predict)
+pr = prediction(random_forest_predict, actual_value)
+predit_preformance2 = performance(pr, measure = "tpr", x.measure = "fpr")
+plot(predit_preformance2, main = "ROC Curve for random_forest with size 100")
+print(paste0("Accuracy: ", mean(random_forest_predict_bi == actual_value))) # 0.8053435
+auc(test_data$survived, random_forest_predict)
+print(paste0("AUC: ", auc(test_data$survived, random_forest_predict))) # AUC = 0.8896752
+
+# Task 6-1
 set.seed(1)
 index = 1
-candidate_number = c(90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100)
-accuracy = rep(0, length(candidate_number))
-AUC = rep(0, length(candidate_number))
+tree_num =seq(80, 120, 5)
+accuracy = rep(0, length(tree_num))
+AUC = rep(0, length(tree_num))
 iter = 10
-for (numOfTree in candidate_number) {
+for (numOfTree in tree_num) {
   for (i in 1:iter) {
     random_forest = randomForest(survived~., data = training_data, ntree = numOfTree)
     random_forest_predict = predict(random_forest, test_data, type = "prob")
@@ -81,24 +93,30 @@ for (numOfTree in candidate_number) {
     random_forest_predict_bi = round(random_forest_predict)
     pr = prediction(random_forest_predict, actual_value)
     predit_preformance2 = performance(pr, measure = "tpr", x.measure = "fpr")
-    # plot(predit_preformance2, main = "ROC Curve for random_forest with size 100")
-
     accuracy[index] = accuracy[index] + mean(random_forest_predict_bi == actual_value)
     AUC[index] = AUC[index] + auc(test_data$survived, random_forest_predict)
-    # print(mean(random_forest_predict_bi == actual_value))
   }
 
   accuracy[index] = accuracy[index] / iter
   AUC[index] = AUC[index] / iter
   index = index + 1
 }
+plot(tree_num, accuracy, type="o", col="blue")
+plot(tree_num, AUC, type="o", col="red")
 
-plot(candidate_number, accuracy, type="o", col="blue")
-plot(candidate_number, AUC, type="o", col="red")
+# Task 6-2
+# num = 85, accuracy = 0.801527, AUC = 0.892
+set.seed(1)
+random_forest = randomForest(survived~., data = training_data, ntree = 85)
+random_forest_predict = predict(random_forest, test_data, type = "prob")
+random_forest_predict = random_forest_predict[, 2]
+random_forest_predict_bi = round(random_forest_predict)
+pr = prediction(random_forest_predict, actual_value)
+predit_preformance2 = performance(pr, measure = "tpr", x.measure = "fpr")
+plot(predit_preformance2, main = "ROC Curve for random_forest with size 85")
+print(paste0("Accuracy: ", mean(random_forest_predict_bi == actual_value))) # 0.801526
+auc(test_data$survived, random_forest_predict)
+print(paste0("AUC: ", auc(test_data$survived, random_forest_predict))) # AUC = 0.892
 
 # Task 7
-# sex, fare, age, pclass, sibsp
-# attributes chosen are the same compared with
-# attributes selected in task2, but the order is different
-imp = importance(random_forest)
 imp_plot = varImpPlot(random_forest)
