@@ -1,0 +1,19 @@
+\contentsline {section}{\numberline {1}Association Rules and Frequent Pattern Mining}{2}
+\contentsline {subsection}{\numberline {1.1}The Frequent Pattern Mining Model}{2}
+\contentsline {subsection}{\numberline {1.2}Association Rules}{3}
+\contentsline {subsubsection}{\numberline {1.2.1}Mining Association Rules}{3}
+\contentsline {subsubsection}{\numberline {1.2.2}Itemset Lattice}{3}
+\contentsline {subsubsection}{\numberline {1.2.3}Anti-monotonicity (downward closure) property}{3}
+\contentsline {subsubsection}{\numberline {1.2.4}Computing the Association Rules}{3}
+\contentsline {subsubsection}{\numberline {1.2.5}Interestingness of Association Rules}{4}
+\contentsline {subsection}{\numberline {1.3}The Apriori Algorithm}{4}
+\contentsline {subsubsection}{\numberline {1.3.1}Approach}{4}
+\contentsline {subsubsection}{\numberline {1.3.2}Candidate Generation}{5}
+\contentsline {subsubsection}{\numberline {1.3.3}Support Counting}{5}
+\contentsline {subsubsection}{\numberline {1.3.4}Hash Tree}{5}
+\contentsline {subsubsection}{\numberline {1.3.5}Methods of Efficiency Improvement}{6}
+\contentsline {subsection}{\numberline {1.4}Enumeration-Tree Algorithms}{6}
+\contentsline {subsection}{\numberline {1.5}Suffix-based Pattern Growth Methods}{6}
+\contentsline {subsection}{\numberline {1.6}Constraint-Based Association Mining}{6}
+\contentsline {subsection}{\numberline {1.7}Multi-level Association Rules}{6}
+\contentsline {subsection}{\numberline {1.8}Pattern Summarization}{6}
