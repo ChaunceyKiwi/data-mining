@@ -283,6 +283,9 @@ INPUT img/pic4-1.png
 INPUT ./img/pic4-1.png
 INPUT ./img/pic4-1.png
 INPUT /usr/local/texlive/2016/texmf-dist/fonts/tfm/public/cm/cmcsc10.tfm
+INPUT img/pic4-3.png
+INPUT ./img/pic4-3.png
+INPUT ./img/pic4-3.png
 INPUT notes.aux
 INPUT /usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb
 INPUT /usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb

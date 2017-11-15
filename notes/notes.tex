@@ -317,9 +317,345 @@ Find all candidates contained in $T = (t_1 t_2 t_3 ... t_m)$
 \end{itemize}
 
 \subsection{Enumeration-Tree Algorithms}
+\begin{itemize}
+  \item Frequent itemsets are stored in a tree-like data structure, the enumeration tree, which provides an abstract, hierarchical representation of the lattice of itemsets.
+  \item Items within aset are ordered lexicographically (Lexicographic tree).
+  \item Hierarchical structure supports systematic and non-redundant exploration of the lattice of itemsets. \\
+  
+  \item Nodes represent itemsets
+  \item Edges represent subset relationships
+  \item A child node $C = \{i_1, i_2, ..., i_k\}$ extends the parent node $P = \{i_1, i_2, ..., i_k-1\}$ by one item that is lexicographically larger than all items of the parent node
+  \item The root represents the empty itemset (null)
+\end{itemize}
+
+\begin{figure}[h]
+\centering
+\caption{The lexicographic or enumeration tree of frequent itemsets}
+\includegraphics[width=6.2cm]{img/pic4-3.png}
+\end{figure}
+
+\begin{algorithm}
+\caption{Generic Enumeration Tree}
+\begin{algorithmic}[0]
+\Function{GenericEnumerationTree}{D, minsup}
+\State /* Initialize enumeration tree $ET$ to Null Node*/
+\While{any node in $ET$ has not been examined}
+  \State select one or more unexamined nodes $P$;
+  \For {each $p$ in $P$}
+    \State Generate candidate extensions $C(p)$;
+  \EndFor
+  \State Count support in $D$ for all $n$ in any $C(p)$;
+  \If {support of n $\ge$ minsup}
+    \State extend node $p$ by node $n$
+  \EndIf
+\EndWhile
+\Return $ET$;
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Example Algorithms}
+\begin{itemize}
+  \item Apriori
+    \begin{itemize}
+    \item candidate generation is level-wise (breadth-first)
+    \item joining siblings
+    \item single databse scan to count support of all candidates of a level
+    \end{itemize}
+  \item FP-growth
+    \begin{itemize}
+    \item candidate generation is depth-first
+    \item create projected databse of transactions supporting an itemset
+    \item count support of candidate extensions only in projected database
+      \begin{itemize}
+        \item Minimize the number of candidate itemsets generated and counted, without missing any frequent itemsets
+      \end{itemize}
+    \end{itemize}
+\end{itemize}
+
 \subsection{Suffix-based Pattern Growth Methods}
+\subsubsection{Recursive Suffix-based Pattern Growth}
+\begin{itemize}
+\item In Apriori, have to count support from scratch at every level
+\item In order not to waste the computational effort of counting, form projected database for a frequent itemset P: all transactions containing itemset $P$
+\item If a transaction does not contain the itemset corresponding to an enumeration-tree node, then this will not be relevant for counting at any descendent (superset itemset) of tht node.
+\item Count support of extensions of P only in projected database of P.
+\item Use absolute minsup, not relative minsup.
+\item Start with empty pattern (suffix) and complete database $D$, where D has been filtered to contain only frequent items.
+\item Recursive calls for all extensions and their projected databases.
+\end{itemize}
+
+\newpage
+
+\begin{algorithm}
+\caption{Algorithm Recursive Suffix Growth {\color{red} confusion waiting to be solved}}
+\begin{algorithmic}[0]
+\State /* D: transactions in terms of frequent 1-items, i.e. without infrequent items */
+\State /* P: current suffix itemset */
+\State /* reports all frequent itemsets with suffix $P$ */ \\
+
+\Function{RecursiveSuffixGrowth}{D, minsup, P}
+\For{\textbf{each} item \textbf{i} in D}
+  \State \textbf{report} itemset $P_i = \{i\} \cup P$  as frequent;
+  \State Form $D_i$ with all transactions from $D$ containing item $i$;
+  \State Remove all items from $D_i$ that are lexicographically $y \ge i$;
+  \State Rmove all infrequent items from $D_i$
+  \If{$D_i \ne \varnothing$}
+    RecursiveSuffixGrowth($D_i, minsup, P_inb$)
+  \EndIf
+\EndFor
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{FP-Tree}
+\begin{itemize}
+  \item Space-efficient data structure for projected database
+  \item Trie structure represents conditional database by consolidating the prefixes
+  \item Path fron the root to a leaf represents a transaction (or a set of identical transactions)
+  \item Path from the root to internal node represents a prefix of a transaction (or a transaction)
+  \item Each node has count (in the original database) of transactions that support that prefix (or transaction)
+  \item Prefixes are sorted in dictionary order
+  \item Lexicographic ordering of items from most frequent to least frequent
+  \begin{itemize}
+    \item Maximizes the effect of prefix-based compression
+      \begin{itemize}
+        \item Item with a large support is more likely to be the prefix of many other itemsets
+      \end{itemize}
+    \item Balances the size of different conditional databases
+  \end{itemize}
+\end{itemize}
+
+Construction of FP-Tree
+\begin{itemize}
+  \item Create an empty tree
+  \item Remove infrequent items from the transactions
+  \item Insert the modified transactions into the tree, one by one
+  \item When the prefix of the transaction overlaps with an existing path, increment the counts of that path by 1
+  \item For the non-overlapping part of the transaction, create new nodes with a count of 1. 
+  \item If applicable, create pointer to ``next'' node with the same item
+\end{itemize}
+
+Extraction of conditional FP-Tree of item i
+\begin{itemize}
+  \item Chase pointers for item i to extract the tree of its conditional prefix paths. Prune remaining branches.
+  \item Adjust counts in the prefix paths to account for the pruned branches
+  \item Count frequency of each item by aggregating the counts of that item in the tree of prefix paths. Remove infrequent items. Item i is also removed.
+    \begin{itemize}
+      \item conditional FP-tree may have to be re-created by successive insertion of prefix paths
+    \end{itemize}  
+\end{itemize}
+
 \subsection{Constraint-Based Association Mining}
+\subsubsection{Motivation}
+\begin{itemize}
+  \item Too many frequent itemsets
+    \begin{itemize}
+      \item Mining is inefficient
+    \end{itemize}
+  \item Too many association rules
+    \begin{itemize}
+      \item hard to evaluate
+    \end{itemize}  
+  \item Constraints may be known apriori
+    \begin{itemize}
+      \item Constraints on the frequent itemsets
+      \item e.g. ``association rules on product A but not on product B''
+      \item e.g. ``only association rules with toal price $ > 100$''
+    \end{itemize}  
+\end{itemize}
+
+\subsubsection{Types of constraints}
+\begin{itemize}
+  \item Domain Constraints
+    \begin{itemize}
+      \item $S \theta v, \theta \in \{=, \ne, <, \le, >, \ge\}$
+      \begin{itemize}
+        \item e.g. $S.price < 100$
+      \end{itemize}
+
+      \item $v \theta S, \theta \in \{\in, \notin\}$
+      \begin{itemize}
+        \item e.g. $snack \notin S.type$
+      \end{itemize}
+
+      \item $V \theta S$ or $S \theta V$, $\theta \in \{\subseteq, \subset, \not\subset, =, \ne\}$
+      \begin{itemize}
+        \item e.g. $\{snacks, wines\} \subseteq S.type$
+      \end{itemize}
+    \end{itemize}
+  
+  \item Aggregation Constraints
+    \begin{itemize}
+      \item $agg(S) \theta v$, where
+      \begin{itemize}
+        \item $agg \in \{min, max, sum, count, avg\}$
+        \item $\theta \in \{=, \ne, <, \le, >, \ge\}$
+      \end{itemize}
+      \item $count(S_1.type) = 1, avg(S_2.price) > 100$
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Application of the Constraints}
+\begin{itemize}
+  \item When determining the association rules
+    \begin{itemize}
+      \item Solves the evaluation problem
+      \item But not the efficiency problem
+    \end{itemize}
+  \item When determining the frequent itemsets
+    \begin{itemize}
+      \item Can also solve the efficiency problem
+      \item Challenge for candidate generation
+    \end{itemize}
+\end{itemize} 
+
+\subsubsection{Anti-Monotonicity}
+\begin{itemize}
+  \item Definition: If an itemset $S$ violates an anti-monotone constraints $C$, then all supersets of $S$ violate this constraint.
+  \item Examples
+    \begin{itemize}
+      \item $sum(S.price) \le v$ is anti-monotone
+      \item $sum(S.price) \ge v$ is not anti-monotone
+      \item $sum(S.price) = v$ is partly anti-monotone
+    \end{itemize}
+  \item Application
+    \begin{itemize}
+      \item Push anti-monotone constraints into candidate generation
+    \end{itemize}
+\end{itemize} 
+
 \subsection{Multi-level Association Rules}
+\subsubsection{Definitions}
+\begin{itemize}
+  \item $I = \{i_1, i_2, ..., i_m\}$ a set of literals (Items)
+  \item $H$ a directed acyclic graph over $I$
+  \item Edge in $H$ i to j:
+
+  \begin{itemize}
+    \item $i$ is a genralization of $j$
+    \item $i$ is called $father$ or direct predecesor of $j$
+    \item $j$ is a son or direct sucessor of $i$
+  \end{itemize}
+
+  \item $\bar{x}$ is predecessor of $x$ ($x$ successor of $\bar{x}$) w.r.t $H$:
+  \begin{itemize}
+    \item there is a path from $x$ to $x$ in $H$
+  \end{itemize}
+
+  \item Set of items $\bar{Z}$ is $predecessor$ of set items $Z$:
+  \begin{itemize}
+    \item at least one item in $\bar{Z}$ predecessor of an item in $Z$
+  \end{itemize}
+
+  \item $D$ is a set of transaction $T$, where $T \subseteq I$
+  \item Typically, transactions $T$ contain only elements from the leaves of graph $H$
+  
+  \item Transaction $T$ supports item $i \in I$
+  \begin{itemize}
+    \item $i \in T$ or $i$ is predecessor of an item $j \in T$
+  \end{itemize}
+  
+  \item $T$ supports set $X \subseteq I$ of items
+  \begin{itemize}
+    \item $T$ supports each item in $X$
+  \end{itemize}
+
+  \item Support of set $X \subseteq I$ of items in $D$
+  \begin{itemize}
+    \item Percentage of transactions in $D$ supporting X.
+  \end{itemize}
+
+  \item Multilevel association rule:
+  \begin{itemize}
+    \item $X \Rightarrow Y$ where $X \subseteq I, Y \subseteq I, X \cap T = \varnothing$
+    \item and no item in Y is predecessor w.r.t. H of an item in X
+  \end{itemize}
+
+  \item Support $s$ of a multilevel association rule $X \Rightarrow Y$ in D:
+  \begin{itemize}
+    \item Support of set $X \cup Y$ in D
+  \end{itemize}
+
+  \item Confidence $c$ of a multilevel association rule $X \Rightarrow Y$ in D:
+  \begin{itemize}
+    \item Percentage of transactions containing $Y$ in the subset of all transactions in $D$ that contain $X$
+  \end{itemize}
+\end{itemize}
+
+\newpage
+
+\subsection{Determining the Frequent Itemsets}
+\subsubsection{Idea}
+\begin{itemize}
+  \item Extend database transactions by all predecessors of items contained in that transaction
+
+  \item Method
+  \begin{itemize}
+    \item Insert each item i transaction $T$ together with all its predessors w.r.t. $H$ into new transaction $T'$ 
+    \item Do not insert duplicates
+  \end{itemize}
+ 
+  \item Then Determine frequent itemsets for basic association rules (e.g. Apriori algorithm)
+
+  \item Basic algorithm for multilevel association rules
+\end{itemize}
+
+\subsubsection{Optimizations of the Basic Algorithm}
+\begin{itemize}
+  \item Materialization of Predecessors
+  \begin{itemize}
+    \item Additional data structure $H$: Item $\rightarrow$ list of all its predecessors
+    \item More efficient access to the predecessors 
+  \end{itemize}
+
+  \item Filtering the predecessors to be added
+  \begin{itemize}
+    \item Add only those predecessors that occur in an element of candidate set $C_k$
+    \item Example: $C_k = \{\{Clothes, Shoes\}\}$, replace ``JacketXT'' by ``Clothes''
+  \end{itemize}
+
+  \item Discard redundant item sets
+  \begin{itemize}
+    \item Let $X$ an k-item set, $i$ an item an $\bar{i}$ a predecessor of $i$
+    \item $X = \{i, \bar{i}, ...\}$
+    \item Support of $X - {i} = $ support of $X$
+    \item X can be discarded during candidate generation
+    \item Do not need to count supoort of k-itemset that contains item $i$ and predecessor of $i$
+  \end{itemize} 
+
+  \item Algorithm $Cumulate$
+\end{itemize} 
+
+\subsubsection{Stratification}
+\begin{itemize}
+  \item Alternative to the basic algorithm (Apriori-algorithm)
+  \item Stratification = form layers in the candidates sets
+  \item Property: Itemset $\bar{X}$ is infrequent and $\bar{X}$ is predecessor of $X$: $X$ is infrequent
+  \item Method:
+    \begin{itemize}
+      \item Do not count all k-itemsets at the same time
+      \item Count support first for the more general itemsets and cunt more special item serts only if necessary
+    \end{itemize}
+  \item Example:
+   \begin{itemize}
+      \item $C_k = \{\{Clothes, Shoes\}, \{Outerwear, Shoes\}, \{Jackets Shoes\}\}$
+      \item Count support first for $\{Clothes, Shoes\}$
+      \item Count support for $\{Outerwear, Shoes\}, \{Jackets Shoes\}\}$ only if $\{Clothes, Shoes\}$ is frequent
+    \end{itemize} 
+  \item Notations
+    \begin{itemize}
+      \item $Depth$ of an itemset
+        \begin{itemize}
+          \item For itemsets $X$ in candidate set $C_k$ without direct predecessor in $C_k: Depth(X) = 0$
+          \item For all other itemsets $X$ in $C_k$: \\ $Depth(X) = max\{Depth(\bar{X}) | \bar{X} \in C_k $ is direct predecessor of X\} + 1
+        \end{itemize}
+      \item $C_k^n:$ Set of itemsets from $C_k$ with depth $n$, $0 \le n \le$ maximal depth $t$
+    \end{itemize} 
+\end{itemize}
+
+\newpage
+
 \subsection{Pattern Summarization}
 
 
