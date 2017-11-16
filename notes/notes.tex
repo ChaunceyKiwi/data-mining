@@ -632,17 +632,20 @@ Extraction of conditional FP-Tree of item i
   \item Alternative to the basic algorithm (Apriori-algorithm)
   \item Stratification = form layers in the candidates sets
   \item Property: Itemset $\bar{X}$ is infrequent and $\bar{X}$ is predecessor of $X$: $X$ is infrequent
+
   \item Method:
     \begin{itemize}
       \item Do not count all k-itemsets at the same time
       \item Count support first for the more general itemsets and cunt more special item serts only if necessary
     \end{itemize}
+
   \item Example:
    \begin{itemize}
       \item $C_k = \{\{Clothes, Shoes\}, \{Outerwear, Shoes\}, \{Jackets Shoes\}\}$
       \item Count support first for $\{Clothes, Shoes\}$
       \item Count support for $\{Outerwear, Shoes\}, \{Jackets Shoes\}\}$ only if $\{Clothes, Shoes\}$ is frequent
-    \end{itemize} 
+    \end{itemize}
+
   \item Notations
     \begin{itemize}
       \item $Depth$ of an itemset
@@ -652,11 +655,157 @@ Extraction of conditional FP-Tree of item i
         \end{itemize}
       \item $C_k^n:$ Set of itemsets from $C_k$ with depth $n$, $0 \le n \le$ maximal depth $t$
     \end{itemize} 
+
+  \newpage
+
+  \item Algorithm Stratify
+  \begin{itemize}
+    \item Count itemsets in $C_k^0$
+    \item Remove all sucessors of infrequent element of $(C_k^0)$
+    \item Count support for remaining elements of $C_k^1$
+  \end{itemize}
+  \item Trade-off between number of itemsets for which the support is counted (memory requirements) and the number of database scans (I/O cost)
+  \item If $|C_k^n|$ is small, count candidates of depth $(n, n+1, ..., t)$ at the same time
+
+  \item Problems of Stratify
+  \begin{itemize}
+    \item If many itemsets of small depth are frequent
+    \item Can discard only few itemsets of larger depths
+  \end{itemize}
+
+  \item Improvements of Stratify
+  \begin{itemize}
+    \item Estimate support of all itemsets in $C_k$ using a sample.
+    \item $C_k':$ all itemsets which have estimated supoort exceeding minimum support.
+    \item Determine actual support of all itemsets in $C_k'$ in one database scan.
+    \item Removve all successors of infrequent elements of $C_k'$ to form $C_k''$
+    \begin{itemize} 
+      \item $C_k'' = C_k - C_k'$
+    \end{itemize}
+    \item Determine support for the remaining elements of $C_k''$ in a second database scan
+  \end{itemize}
 \end{itemize}
 
+\subsection{Interestingness of Multilevel Association Rules}
+\begin{itemize}
+  \item $\bar{X} \Rightarrow \bar{Y}$ is predecessor of $X \Rightarrow Y$ \\ 
+  Itemsets $\bar{X}$ is predecessor of item set $X$ and/or item set $\bar{Y}$ is predecessor of set $Y$
+
+  \item $\bar{X} \Rightarrow \bar{Y}$ direct predecessor of $X \Rightarrow Y$ in a set of rules: \\
+  $\bar{X} \Rightarrow \bar{Y}$ is predecessor of $X \Rightarrow Y$, and there is no rule $X' \Rightarrow Y'$ \\
+  such that $X' \Rightarrow Y'$ predecessor of $X \Rightarrow Y$ and $\bar{X} \Rightarrow \bar{Y}$ predecessor of $X' \Rightarrow Y'$
+
+  \item Multilevel association rule $X \Rightarrow Y$is R-interesting
+  \begin{itemize} 
+    \item Has no direct predecessors $or$
+    \item Actual support (confidence) $ > R$ times the expected support (confidence)
+    \item And the direct predecessor is also R-interesting
+  \end{itemize}
+
+\end{itemize}
+
+\subsection{Multilevel Association Rules}
+Choice of $minsup$
+\begin{itemize} 
+  \item Fix support
+  \begin{itemize} 
+    \item Same $minsup$ value for all levels of the item taxonomy
+    \item + Efficiency: pruning successors of in frequent itemsets
+    \item - Reduced effectiveness
+    \begin{itemize} 
+      \item $minsup$ too high $\Rightarrow$ no low-level associations 
+      \item $minsup$ too low $\Rightarrow$ too many high-level associations
+    \end{itemize}
+  \end{itemize}
+
+  \item Variable support
+  \begin{itemize} 
+    \item Different $minsup$ values for different levels of the item taxonomy
+    \item + Good effectiveness: find association rules at appropriate support level
+    \item - Inefficient: no pruning of successors of infrequent itemsets
+  \end{itemize}
+\end{itemize}
 \newpage
 
 \subsection{Pattern Summarization}
+\subsubsection{Overview}
+\begin{itemize} 
+  \item In many applications, there are too many frequent itemsets (patterns).
+  \item Leads to inefficient mining.
+  \item Makes it hard for user to analyze the patterns in a meaningful way
+  \item The vast majority of the generated patterns are typically redundant.
+  \item Thus, we need to summarize sets of patterns \\
 
+  \item Closed frequent itemsets
+  \begin{itemize} 
+    \item lossless compression: can reconstruct all frequent itemsets and their support
+  \end{itemize}
+
+  \item Maximal frequent itemsets
+  \begin{itemize} 
+    \item lossy compression: can reconstruct all frequent itemsets but not their support
+  \end{itemize}
+
+  \item Approximate representations
+  \begin{itemize} 
+    \item lossless compression: can reconstruct neither all frequent itemsets nor their support
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{Closed Frequent Itemsets}
+\begin{itemize} 
+  \item An itemset $X$ is closed, if none of its supersets has the same support as $X$
+  \item S(X): set of subset of X, which have the same support as $X$
+  \item Every itemset in $S(X)$ is supported by the same set of transactions, and therefore, it suffices to keep $X$ as the single representative itemset. 
+  \item Goal is to produce all closed, frequent itemsets.
+  \item Two approaches:
+  \begin{itemize} 
+    \item post-process the results of frequent itemset mining
+    \item directly find the closed frequent patterns during the process of frequent pattern discovery
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{Mining Closed Frequent Itemsets}
+\begin{itemize} 
+  \item Partition the set $F$ of frequent itemsets into equi-support groups.
+  \item The maximal itemsets from each equi-support group are closed frequent itemsets and are to be determined
+  \item For that goal, the pattern in an equi-support group are processed in decreasing order of length and either ruled in or ruled out, depending on whether or not they are closed.
+  \item This order ensures that closed patterns are encountered before their redundant subsets
+  \item Initially, all patterns are unmarked
+  \item When an unmarked pattern $X \in F$ is processed, it is added to the frequent closed set $CF$.
+  \item The proper subsets of $X$ with the same support are marked. To achieve this goal, the subset of the itemset lattice representing $F$ can be traversed in depth-first or breadth-first order starting at $X$, and exploring subsets of $X$. Itemsets that are subsets of $X$ are marked when thet have the same support as $X$.
+  \item The traversal process backtracks when an itemset is reached with strictly larger support, or the itemset has already been marked.
+  \item After the traversal is complete, the next unmarked node is selcted for further exploration and added to CF.
+\end{itemize}
+
+\subsubsection{Maximal Frequent Itemsets}
+\begin{itemize} 
+  \item A frequent $X$ is maximal, if none of its supersets is frequent.
+  \item Maximal frequent itemsets are closed.
+  \item The number of maximal frequent itemsets may be orders of magnitude smaller than the number of all frequent itemsets
+  \item Naive algorithm: determine all frequent itemsets, and post-process them to remove all non-maximal ones.
+  \item Direct algorithm: most tree-enumeration algorithms can be modified with the concept of look-aheads to directly determine only (mostly) maximal patterns.
+\end{itemize}
+
+\subsubsection{Naive Algorithm}
+\begin{itemize} 
+  \item Apply any algorithm to determine all frequent itemsets.
+  \item Examine itemsets in decreasing order of length, removing all proper subsets of a given itemset.
+  \item Continue until all itemsets have either been examined or have been removed.
+  \item The itemsets that have not been removed at termination are the maximal ones.
+\end{itemize}
+
+\subsubsection{Direct Algorithm}
+\begin{itemize} 
+  \item Let C(P) be the set of candidate extenstions of node (frequent itemset) P
+  \item Before support couting, test whether $P \cup C(P)$ is subset of a frequent pattern that has already been found.
+  \item If yes, $P \cup C(P)$ is non-maximal frequent pattern, and the entire subtree (of the enumeration tree) rooted at $P$ can pruned.
+  \item If $P$ cannot be pruned, the supports its support of its candidate extensions need to be determined. During this support counting, the support of $P \cup C(P)$ is counted along with the individual item extensions of P.
+  \item If $P \cup C(P)$ is frequent, then it eliminates any further work of counting the supprt of nodes in the subtree rooted at node $P$.
+  \item This subset-based pruning approach is particularly effecive with depth-first methods.
+  \item Maximal patterns are found much earlier with a depth-first strategy than with a breadth-first strategy.
+  \item For a maximal pattern of length $k$, the depth-first approach discovers it after exploring only (k-1) of its prefixs, rather than the $2^k$ subsets. This maximal pattern then becomes available for subset-based pruning.
+  \item The pruning approach provides a smaller set of patterns that includes all maximal pattern but may also include some non-maximal pattern despite pruning.
+\end{itemize}
 
 \end{document}
