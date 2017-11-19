@@ -1,0 +1,112 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper, top=1in, bottom=1in, left=1in, right=1in]{geometry} 
+\usepackage{graphicx}
+\setlength\parindent{0pt} % Removes all indentation from paragraphs - comment this line for an assignment with lots of text
+
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{tikz}
+\usepackage{pgfplots}
+
+\newcommand\tab[1][1cm]{\hspace*{#1}}
+\newcommand{\vect}[1]{\boldsymbol{#1}}
+
+\title{\huge{\textbf{Demo of Algorithm Recursive Suffix Growth}}}
+\author{Chauncey Liu}
+\date{\today}
+
+\begin{document}
+ 
+\maketitle
+
+\section{Recursive Suffix-based Pattern Growth}
+\begin{itemize}
+\item In order not to waste the computational effort of counting, form projected database for a frequent itemset P: all transactions containing itemset $P$
+\item If a transaction does not contain the itemset corresponding to an enumeration-tree node, then this will not be relevant for counting at any descendent (superset itemset) of tht node.
+\item Count support of extensions of P only in projected database of P.
+\item Use absolute minsup, not relative minsup.
+\item Start with empty pattern (suffix) and complete database $D$, where D has been filtered to contain only frequent items.
+\item Recursive calls for all extensions and their projected databases.
+\item The items in the database are ordered with decreasing support. The lexicographic ordering is used to define the ordering of items within itemsets and transactions. 
+\end{itemize}
+
+\begin{algorithm}
+\caption{Algorithm Recursive Suffix Growth}
+\begin{algorithmic}[0]
+\State /* D: transactions in terms of frequent 1-items, i.e. without infrequent items */
+\State /* P: current suffix itemset */
+\State /* reports all frequent itemsets with suffix $P$ */ \\
+
+\Function{RecursiveSuffixGrowth}{D, minsup, P}
+\For{\textbf{each} item \textbf{i} in any transaction of D}
+  \State \textbf{report} itemset $P_i = \{i\} \cup P$  as frequent;
+  \State Form $D_i$ with all transactions from $D$ containing item $i$;
+  \State Remove all items from $D_i$ that are lexicographically $y \ge i$;
+  \State Rmove all infrequent items from $D_i$
+  \If{$D_i \ne \varnothing$}
+    RecursiveSuffixGrowth($D_i, minsup, P_i$)
+  \EndIf
+\EndFor
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\newpage
+ 
+\section{Demo}
+
+\begin{tabular}{| c | c |}
+\hline
+ID & Transaction \\
+\hline
+1 & \{f, a, c, d, g, i, m, p\} \\
+2 & \{a, b, c, f, l, m, o\} \\
+3 & \{b, f, h, j, o, w\} \\
+4 & \{b, c, k, s, p\} \\
+5 & \{a, f, c, e, l, p, m, n\} \\
+\hline
+\end{tabular} \\
+
+Scan DB once, find single item frequent pattern with $minsup$ = 3: \\
+f: 4 \\
+c: 4 \\
+a, b, m, p: 3 \\
+
+Transactions in terms of frequent 1-items, i.e. without infrequent items: \\
+\{a, c, f, m, p\} \\
+\{a, b, c, f, m\} \\
+\{b, f\} \\
+\{b, c, p\} \\
+\{a, c, f, m, p\} \\
+
+In the beginning, $P = \varnothing$, item $\textbf{i} = f$ \\
+
+1. Report $P_i = \{f\} \cup \varnothing = \{f\}$ as frequent \\
+
+2. Form $D_i$ with all transactions from $D$ containing item $f$: \\
+$D_i = $ \\ 
+\{a, c, f, m, p\} \\
+\{a, b, c, f, m\} \\
+\{b, f\} \\
+\{a, c, f, m, p\} \\
+
+3. Remove all items from $D_i$ that are lexicographically $\ge i$ \\
+$D_i = \{\{a, c\}, \{a, b, c\}, \{b\}, \{a, c\}\}$ \\
+
+4. Remove all infrequent items from $D_i$ \\
+$D_i = \{\{a, c\}, \{a, c\},\{a, c\}\}$ \\
+
+5. Run RecursiveSuffixGrowth($\{\{a, c\}, \{a, c\},\{a, c\}\}$, 3, $\{f\}$), go to 6 and 7. \\
+
+6. Report $\{a, f\}$, $D_i = \varnothing$, return. \\
+
+7. Report $\{c, f\}$, $D_i = \{\{a\},\{a\},\{a\}\}$, run RecursiveSuffixGrowth($\{\{a\}, \{a\},\{a\}\}$, 3, $\{cf\}$), goto 8. \\
+
+8. Report $\{a, c, f\}$, $D_i = \varnothing$, return. \\
+
+\textbf{All frequent itemsets with suffix as $f$ are found (f, af, cf, acf). Continue with other items.}
+\end{document}

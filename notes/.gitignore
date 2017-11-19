@@ -1,3 +1,9 @@
-*
-!.gitignore
-!notes.tex
+*.log
+*.pdf
+*.gz
+*.aux
+*.fls
+*.out
+*.toc
+*.fdb_latexmk
+.DS_Store
