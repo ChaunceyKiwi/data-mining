@@ -25,7 +25,7 @@ Derive meaning features from the data
 * Extract meaningful features that lead to interpretable results
 
 ### Document data
-* Choose releveant terms in document set
+* Choose relevant terms in document set
 * Calcualte term frequencies in a document
 * Map document to vector in term space
 
@@ -62,6 +62,7 @@ numerical -> ordinal (categorical)
 		
 #### Binarization
 categorical -> numberical
+
 * Because binary data is special form of both numberical and categorical data, it is possible to convert categorical attributes to binary form.
 
 ## Data Cleaning

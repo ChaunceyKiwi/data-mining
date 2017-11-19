@@ -6,7 +6,7 @@
 * Decision Trees
 * Bayesian Classification
 * Logistic Regression
-* Nearest-neighbour Classification
+* Nearest-neighbor Classification
 * Support Vector Machine
 * Regression Analysis
 * Ensemble Classifiers

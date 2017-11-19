@@ -1,0 +1,416 @@
+\documentclass[../notes.tex]{subfiles}
+
+\begin{document}
+
+\section{Data Preprocessing}
+
+\subsection{Introduction}
+\textbf{Why do need data preprocessing?}
+
+\begin{itemize}
+  \item Data mining is based on existing data, which in the real word is dirty
+  \begin{itemize}
+    \item incomplete
+    \item noisy
+    \item inconsistent
+  \end{itemize}
+
+  \item Quality of data mining results crucially depends on quality of input data
+\end{itemize}
+
+\subsection{Feature Extraction}
+Derive meaning features from the data
+
+\subsubsection{Goal}
+\begin{itemize}
+  \item Extract meaningful features that are relevant for the given data mining task
+  \item Extract meaningful features that lead to interpretable results
+\end{itemize}
+
+\subsubsection{Document Data}
+\begin{itemize}
+  \item Choose relevant terms in document set
+  \item Calculate term frequencies in a document
+  \item Map document to vector in term space
+\end{itemize}
+
+\subsubsection{Image Data}
+\begin{itemize}
+  \item To extract features, histograms of colors/textures can be used
+\end{itemize}
+
+\subsubsection{Time Series Data}
+\begin{itemize}
+  \item Raw data is variable-length sequence of numerical or categorical data, which is associated with time stamp
+  \item Naive approach creates one feature for each predefined time window, aggregating all values within the window
+\end{itemize}
+
+\subsection{Data Transformation}
+\subsubsection{Overview}
+\begin{itemize}
+  \item Normalization
+  \begin{itemize}
+    \item To make different records comparable
+  \end{itemize}
+
+  \item Convert Data Types
+  \begin{itemize}
+    \item To allow application of data mining methods for other data type
+    \item Discretization: numerical $\Rightarrow$ ordinal (categorical)
+    \item Binarization: categorical $\Rightarrow$ numerical
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{Normalization}
+\begin{itemize}
+  \item Min-max scaling 
+  $$v' = \frac{v - min_\alpha}{max_\alpha - min_\alpha}$$
+
+  \item Z-score(standardization)
+  \begin{itemize}
+    \item $$v' = \frac{v - \mu_a}{\sigma_a}$$
+    \item a: attribute
+    \item v: original value
+    \item v' = normalized value
+    \item $\mu_a$: mean of attribute a
+    \item $\sigma_a$: standard deviation of attribute a
+  \end{itemize}
+
+  \item Percentile rank
+  \begin{itemize}
+    \item Percentage of values that are equal to or lower than $v$
+    \begin{itemize}
+      \item $$v' = \frac{freq(a<v) + 0.5freq(a=v)}{N}$$
+      \item $freq(a < v)$: number of records with $a < v$
+      \item $freq(a = v)$: number of records with $a = v$
+      \item $N$: number of all records
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{Discretization}
+\begin{itemize}
+  \item Goal
+  \begin{itemize}
+    \item Reduce the number of values for a given numerical feature by partitioning the range of the feature into intervals
+    \item Interval labels replace actual feature values
+  \end{itemize}
+
+  \item Method
+  \begin{itemize}
+    \item Binning
+      \begin{itemize}
+        \item Equal-width binning
+        \begin{itemize}
+          \item Divides the range of feature values into $N$ intervals of equal size.
+          \item Width of intervals: Width = $\frac{(Max-Min)}{N}$
+          \item simple
+          \item Outlier may dominate result
+        \end{itemize}
+        
+        \item Equal-depth binning 
+        \begin{itemize}
+          \item Divides the range of feature values into N intervals, each containing approximately same number of records.
+          \item Outliers and skewed data are also handled well.
+        \end{itemize}
+      \end{itemize}  
+
+    \item Entropy-based discretization
+    \begin{itemize}
+      \item For classification tasks
+      \item Given training data set $S$ with class labels $c_1, c_2, ..., c_k$ and probabilities $p_1, p_2, ..., p_k$
+      \item Entropy of S 
+      \begin{itemize}
+        \item $$Ent(S) = \sum_{i=1}^{k}-p_i log(p_i)$$
+      \end{itemize} 
+      \item If S is partitioned into two intervals $S_1$ and $S_2$ using boundary $T$, the entropy after partitioning is
+      $$E(S, T) = \frac{|S_1|}{|S|}Ent(S_1) + \frac{|S_2|}{|S|}Ent(S_2)$$
+      \item Binary discretization: choose boundary that minimizes the entropy function.
+      \item Recursive partitioning of the obtained partitions until some stopping criterion is met, e.g., $Ent(S) - E(T, S) \le \delta$
+    \end{itemize}
+
+    \item Binarization
+    \begin{itemize}
+      \item Because binary data is a special form of both numerical and categorical data, it is possible to convert categorical attributes to binary form.
+      \item If a categorical attribute has $\varphi$ different values, then $\varphi$  different binary attributes are created, each corresponding to one possible value.
+      \item Exactly one of the $\varphi$ attributes takes on the value of 1, and the remaining take on the value of 0.
+      \item Data mining algorithms for numerical data can now be applied.
+    \end{itemize}    
+  \end{itemize}
+\end{itemize}
+
+\subsection{Data Cleaning}
+\subsubsection{Missing Data}
+\begin{itemize}
+  \item Data is not always available
+  \begin{itemize}
+    \item E.g., many records have no value for several attributes, such as customer income in sales data.
+  \end{itemize}
+
+  \item Missing data may be due to
+  \begin{itemize}
+    \item Equipment malfunction
+    \item Inconsistent with other recorded data and thus deleted
+    \item Data not entered due to misunderstanding
+  \end{itemize}
+
+  \item Handling Missing Data
+  \begin{itemize}
+    \item Ignore the record: usually done when class label is missing.
+    \item Impute missing values
+    \begin{itemize}
+      \item Use a default to fill in the missing value:
+      \begin{itemize}
+        \item e.g., unknown, a special class, ...
+      \end{itemize}
+
+      \item Use the attribute mean to fill in the missing value
+      \begin{itemize}
+        \item for classification: mean for all records of the same class
+      \end{itemize}        
+          
+      \item Use the most probable value to fill in the missing value
+      \begin{itemize}
+        \item inference-based such as Bayesian formula or regression
+        \item For catagorical data, use most frequent value
+      \end{itemize} 
+    \end{itemize}     
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{Noisy Data}
+\begin{itemize}
+  \item Noise: random error or variance in a measured attribute
+
+  \item Noisy attribute values may due to
+  \begin{itemize}
+    \item Faulty data collection instruments
+    \item Data entry problems
+    \item Data transmission problems
+    \item Technology limitation
+    \item Inconsistency in naming convention
+  \end{itemize}
+
+  \item Handling Noisy Data
+  \begin{itemize}
+    \item Binning
+    \begin{itemize}
+      \item Sort data and partition into bins.
+      \item Smooth by bin means, bin median, bin boundaries, etc.
+    \end{itemize}
+
+    \item Regression
+    \begin{itemize}
+      \item Smooth by fitting a regression function.
+      \item Replace noisy or missing values by predicted values.
+      \item Requires model of feature dependencies
+      \item Can be used for data smoothing or for handling missing data
+    \end{itemize}
+
+    \item Clustering
+    \begin{itemize}
+      \item Detect and remove outliers.
+    \end{itemize}
+
+    \item Combined computer and human inspection
+    \begin{itemize}
+      \item Detect suspicious values automatically and check by human.
+    \end{itemize}
+
+  \end{itemize}  
+\end{itemize}
+
+\subsection{Data Integration}
+\subsubsection{Overview}
+\begin{itemize}
+  \item Purpose
+  \begin{itemize}
+    \item Combine datasets from multiple sources into a coherent dataset (database).
+  \end{itemize} 
+
+  \item Schema integration
+  \begin{itemize}
+    \item Integrate metadata from different sources.
+    \item Attribute identification problem: same attributes from multiple data sources may have different names.
+  \end{itemize}
+
+  \item Instance integration
+  \begin{itemize}
+    \item Integrate instances from different sources.
+    \item For the same real world entity, attribute values from different sources maybe different.
+    \item Possible reasons: different representations, different conventions, different scales, errors.
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{Approach}
+\begin{itemize}
+  \item Identification
+  \begin{itemize}
+    \item Detect corresponding tables from different sources manually
+    \item Detect corresponding attributes from different sources may use correlation analysis
+    \begin{itemize}
+      \item e.g. $A.custId = B.cust\#$
+    \end{itemize}
+
+    \item Detect duplicate records from different sources involve approximate matching of attribute values
+    \begin{itemize}
+      \item e.g. $3.14283 = 3.1, Schwartz = Schwarz$
+    \end{itemize}
+
+  \end{itemize}
+
+  \item Treatment
+  \begin{itemize}
+    \item Merge corresponding tables
+    \item Use attribute values as synonyms
+    \item Remove duplicate records
+  \end{itemize}
+\end{itemize}
+
+\subsection{Data Reduction}
+\subsubsection{Motivation}
+\begin{itemize}
+  \item Improved efficiency
+  \begin{itemize}
+    \item Runtime of data mining algorithms is typically (super-)linear in the number of records and number of attributes.
+  \end{itemize}  
+
+  \item Improved quality
+  \begin{itemize}
+    \item Removal of irrelevant attributes and/or records avoids overfitting and improves the quality of the discovered patterns.
+  \end{itemize}  
+
+  \item Reduce number of records and / or number of attributes
+  \item Reduced dataset should be representative.
+\end{itemize}
+
+\subsubsection{Feature Selection}
+\begin{itemize}
+  \item Goal
+  \begin{itemize}
+    \item Select as features the ``relevant'' subset of the set of all attributes
+    \item For classification:
+    \begin{itemize}
+      \item Select a set of features such that the probability distribution of classes given the values for selected attributes is as close as possible
+to the class distribution given the values of all attributes.
+    \end{itemize}
+  \end{itemize}  
+
+  \item Problem
+  \begin{itemize}
+    \item $2^d$ possible subsets of set of $d$ attributes. 
+    \item Need heuristic feature selection methods.
+  \end{itemize}
+
+  \item Feature selection methods:
+  \begin{itemize}
+    \item Feature independence assumption:
+    \begin{itemize}
+      \item choose features independently by their relevance
+    \end{itemize}
+
+    \item Greedy bottom-up feature selection
+    \begin{itemize}
+      \item The best single-feature is picked first
+      \item Then next best feature conditioned on the first
+    \end{itemize}
+
+    \item Greedy top-down feature elimination
+    \begin{itemize}
+      \item Repeatedly eliminate the worst feature
+    \end{itemize}
+
+    \item Set-oriented feature selection 
+    \begin{itemize}
+      \item  Consider trade-off between relevance of individual features and the redundancy of feature set
+    \end{itemize}
+
+    \item Feature selection criteria
+    \begin{itemize}
+      \item Mutual information
+      \begin{itemize}
+        \item For categorical features
+        \item measures the information that feature X and class Y share.
+      \end{itemize}
+
+      \item How much does knowing one of the attributes reduce uncertainty about the other?
+      \begin{itemize}
+        \item $$MI(X, Y) = \sum_x \sum_y p(x, y)log \bigg(\frac{p(x, y)}{p(x)p(y)}\bigg)$$
+        \item Fisher score
+        \item for numerical features and classes $c_1, c_2, ..., c_k$
+        \item measures the ratio of the average interclass separation to the average intraclass separation
+        \item $$F(f) = \frac{\sum_{i=1}^k p_i (\mu_{if} - \mu_f)^2}{\sum_{i=1}^k p_i \sigma_{if}^2}$$
+        \item $p_i:$ probability of class $i$
+        \item $\mu_{if}:$ mean of feature $f$ in class $i$
+        \item $\mu_{f}$: mean of feature $f$
+        \item $\sigma_{if}^2$: variance of feature $f$ in class $i$
+      \end{itemize}      
+    \end{itemize}  
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{Principal Component Analysis (PCA)}
+\begin{itemize}
+  \item Task
+  \begin{itemize}
+    \item Given N data vectors from d-dimensional space, find $c << d$ orthogonal vectors that can best represent the data.
+    \item Data representation by projection onto the c resulting vectors.
+    \item Best fit: minimal squared error, error = difference between original and transformed vectors
+  \end{itemize}  
+
+  \item Properties
+  \begin{itemize}
+    \item Resulting c vectors are the directions of the maximum variance of original data.
+    \item These vectors are linear combinations of the original attributes (maybe hard to interpret!)
+    \item Works for numerical data only.
+  \end{itemize}
+
+  \item X: $n * d$ matrix representing the training data
+  \item a: vector of projection weights (defines resulting vectors)
+  \item $\sigma^2 = (Xa)^T(Xa) = a^TVa$
+  \item $V = X^T X$ (d *d covariance matrix of the training data)
+  \item First principle component: eigenvector of the largest eigenvalue of V
+  \item Second principal component: eigenvector of the second largest eigenvalue of V and so forth
+  \item Choose the first $k$ principal components or enough principal components so that the resulting error is below some threshold.
+\end{itemize}
+
+\subsubsection{Sampling}
+\begin{itemize}
+  \item Goal: choose a representative subset of the data records
+  
+  \item Samping without replacement
+  \begin{itemize}
+    \item From a data set D with n records, a total of $nf$ records are randomly selected from the not yet selected data.
+  \end{itemize}
+
+  \item Sampling with replacement
+  \begin{itemize}
+    \item From a data set D with n records, records are sampled independently from the entire data set D for a total of n f (possibly duplicate) samples.
+  \end{itemize}
+
+  \item Random sampling may overlook small but important groups
+
+  \item Advanced sampling methods
+  \begin{itemize}
+    \item Biased sampling
+    \begin{itemize}
+      \item Oversample more important records, e.g. more recent ones.
+    \end{itemize}
+
+    \item Stratified sampling
+    \begin{itemize}
+      \item Draw random samples independently from each given stratum (e.g. age group).
+    \end{itemize}
+
+    \item Cluster sampling
+    \begin{itemize}
+      \item Draw random samples independently from each given cluster (e.g. customer segment).
+    \end{itemize}
+
+  \end{itemize}
+
+\end{itemize} 
+
+
+
+\end{document}
