@@ -1,0 +1,198 @@
+\documentclass[../notes.tex]{subfiles}
+
+\begin{document}
+
+\section{Graph Mining and Social Network Analysis}
+
+\subsection{Graphs and social networks}
+
+\subsubsection{Basic Definitions}
+
+\begin{itemize}
+  \item Graph G = (V, E)
+  \begin{itemize}
+    \item V: set of vertices / nodes
+    \item $E \subseteq V*V$: set of edges
+  \end{itemize}
+
+  \item Graph can be directed (asymmetric relationships) or undirected (symmetric relationships)
+
+  \item Adjacency matrix (sociomatrix) alternative representation of a graph
+  \begin{itemize}
+    \item $y_{i, j} = 
+  \begin{cases}
+    1, & \text{if} (v_i, v_j) \in E \\
+    0,              & \text{otherwise}
+  \end{cases}$ 
+  \end{itemize}
+
+  \item Network: used as synonym to graph, a more application-oriented term.
+
+  \item Labeled graph
+  \begin{itemize}
+    \item set of labels $L$ for nodes or edges
+    \item $f: V \rightarrow L$ or $f: E \rightarrow L$
+    \item $|L|$ typically small
+  \end{itemize}
+
+  \item Attribute graph
+  \begin{itemize}
+    \item set of attributes with domain $D_1, D_2, ..., D_d$
+    \item $f: V \rightarrow D_1 * D_2 * ... * D_d$
+    \item $|D_i|$ typically large, can have continuous domains
+  \end{itemize}
+
+  \item Neighbors $N_i$ of node $v_i$:
+  \begin{itemize}
+    \item $N_i = \{v_j \in V | (v_i, v_j) \in E \}$    
+  \end{itemize}
+
+  \item Degree $deg(v)$ of node $v$: 
+  \begin{itemize}
+    \item $deg(v) = |N_i|$
+  \end{itemize}  
+
+  \item Clustering coefficient of node $v$:
+  \begin{itemize}
+    \item fraction of pairs of neighbors of $v$ that are connected
+  \end{itemize}  
+
+  \item Betweeness of node $v$, or of edge $e$
+  \begin{itemize}
+    \item number of shortest paths between any pair of nodes in G that go through $v$ or $e$
+  \end{itemize}  
+
+  \item Shortest path distance between nodes $v_1$ and $v_2$
+  \begin{itemize}
+    \item length of shortest path between $v_1$ and $v_2$
+    \item also called minimum geodesic distance
+  \end{itemize}
+
+  \item Diameter of graph $G$
+  \begin{itemize}
+    \item maximum shortest path distance for any pair of nodes in $G$
+  \end{itemize}
+
+  \item Effective diameter of graph $G$
+  \begin{itemize}
+    \item distance at which 90\% of all connected pairs of nodes can be reached
+  \end{itemize}
+
+  \item Mean geodesic distance of graph $G$
+  \begin{itemize}
+    \item average minimum geodesic distance for any pair of nodes in $G$
+  \end{itemize}
+
+  \item Scale-free networks
+  \begin{itemize}
+    \item networks with a power law degree distribution $f(cx) \propto f(x)$
+    \item $P(k) = k^{-\lambda}$ where P(k) is the probability that a node has degree $k$ ($\lambda$ typically between 2 and 3)
+  \end{itemize}
+\end{itemize}
+
+\newpage
+
+\subsubsection{Graphs and Social Networks}
+\textbf{Data Mining Scenarios}
+\begin{itemize}
+  \item One large graph
+  \begin{itemize}
+    \item mine dense subgraphs or clusters
+    \item analyze evolution
+  \end{itemize}
+
+  \item Many small graph
+  \begin{itemize}
+    \item mine frequent subgraphs
+  \end{itemize}
+
+  \item Two collections of many small graphs
+  \begin{itemize}
+    \item classify graphs
+  \end{itemize}
+
+\end{itemize}
+
+\subsection{Graph pattern mining}
+\begin{itemize}
+  \item Given a graph dataset $DB$
+  \begin{itemize}
+    \item i.e. a set of labeled graphs $G_1, G_2, ..., G_n$ and a minimum support $\theta$, $0 \le \theta \le 1$
+  \end{itemize}
+
+  \item Find the graphs that are contained in at least $\theta n$ of the graphs of $DB$
+  \item Assumption: the more frequent, the more interesting a graph
+  \item $G$ contained in $G_i$:
+  \begin{itemize}
+    \item $G$ is isomorph to a subgraph of $G_i$
+  \end{itemize}
+\end{itemize}
+
+\textbf{Anti-Monotonicity Property}
+\begin{itemize}
+  \item If a graph is frequent, all of its subgraphs are frequent.
+  \item Can prune all candidates patterns that have an infrequent subgraph, i.e. disregard them from further consideration
+  \item The higher $\theta$, the more effective the pruning.
+\end{itemize}
+
+\textbf{Duplicate Elimination}
+\begin{itemize}
+  \item Given existing patterns $G_1, G_2, ..., G_m$ and newly discovered pattern $G$. Is G a duplicate?
+  \item Method 1 (slow)
+  \begin{itemize}
+    \item Check graph isomorphism of $G$ with each of the $G_i$
+    \item Graph isomorphism test is a very expensive operation
+  \end{itemize}
+
+  \item Method 2 (faster)
+  \begin{itemize}
+    \item Transform each graph $G_i$ into a canonical form and hash it into a hash table.
+    \item Transform $G$ in the same way and check whether there is already a graph $G_i$ with the same hash value.
+    \item Test for graph isomorphism only if such $G_i$ already exists.
+  \end{itemize}
+
+  \item Method 3 (fastest)
+  \begin{itemize}
+    \item Define a canonical order of subgraphs and explore them in that order.
+    \item e.g. graphs in same equivalence class, if they have the same canonical spanning tree
+    \item Does not need isomorphism tests
+  \end{itemize}
+\end{itemize}
+
+\textbf{Conclusion}
+\begin{itemize}
+  \item Lots of sophisticated algorithms for mining frequent graph patterns: MoFa, gSpan, FFSM, Gaston, ..
+  \item But the number of frequent patterns is exponential
+  \item This implies three related problems:
+  \begin{itemize}
+    \item very high runtimes
+    \item resulting sets of patterns hard to interpret
+    \item minimum support threshold hard to set
+  \end{itemize}
+\end{itemize}
+
+\textbf{Research Directions}
+\begin{itemize}
+  \item Mine only closed or maximal frequent graphs
+  \begin{itemize}
+    \item i.e. frequent graphs so that no supergraph has the same (or has at least $\theta$) support.
+  \end{itemize}
+
+  \item Summarize graph patterns
+  \begin{itemize}
+    \item find the top k most representative graphs
+  \end{itemize}
+
+  \item Constraint-based graph pattern mining
+  \begin{itemize}
+    \item Find only patterns that satisfy certain conditions on their size, density and diameter. 
+  \end{itemize}
+\end{itemize}
+
+\subsection{Graph classification}
+
+\subsection{Graph clustering}
+
+\subsection{Graph evolution}
+
+\end{document}
