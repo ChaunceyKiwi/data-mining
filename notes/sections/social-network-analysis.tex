@@ -114,6 +114,7 @@
 \end{itemize}
 
 \subsection{Graph pattern mining}
+\subsubsection{Frequent Pattern Mining}
 \begin{itemize}
   \item Given a graph dataset $DB$
   \begin{itemize}
@@ -189,10 +190,259 @@
   \end{itemize}
 \end{itemize}
 
+\subsubsection{Dense Graph Mining}
+\begin{itemize}
+  \item Assumption: the denser a graph, the more interesting
+  \item Find dense subgraphs in a large graph
+  \item Density of graph $G$: $density(G) = \frac{2|E|}{|V|(|V|-1)}$
+  \item Want to find all subgraphs with density at least $\alpha$
+\end{itemize}
+
+\textbf{Weak Anti-Monotonicity Property}
+\begin{itemize}
+  \item If a graph of size k is dense, (at least) one of its subgraphs of size k-1 is dense.
+  \item Thus cannot prune all candidate patterns that have a subgraph which is not dense.
+  \item But can still enumerate patterns in a level-wise manner, extending only dense patterns by another node.
+\end{itemize}
+
+\textbf{Quasi-Cliques}
+\begin{itemize}
+  \item Graph G is $\gamma$-quasi-clique if every node $v \in G$ has at least $\gamma(|V|-1)$ edges
+  \item For $\gamma \le 1$, the $\gamma$-quasi-clique property is not anti-monotone, not even weakly anti-monotone
+\end{itemize}
+
+\textbf{Mining Quasi-Cliques}
+\begin{itemize}
+  \item Enumerate all subgraphs
+  \item Prune based on maximum diameter of $\gamma$-quasi-clique $G$
+\end{itemize}
+
+\subsubsection{Mining Cohesive Patterns}
+\begin{itemize}
+  \item Cohesive pattern: subgraph $G'$ satisfying three conditions:
+  \begin{itemize}
+    \item subspace $homogeneity$, i.e. attribute values are within a range of at most $\omega$ in at least $\delta$ dimensions
+    \item $density$, i.e. has at least $\alpha$ of all possible edges
+    \item $connectedness$, i.e. each pair of nodes has a connecting path in $G'$
+  \end{itemize}
+
+  \item Task: Find all maximal cohesive patterns
+\end{itemize}
+
+\textbf{Algorithm}
+\begin{itemize}
+  \item Cohesive Pattern Mining problem is NP-hard decision version reduceable from Max-Clique problem.
+  \item An anti-monotone constraint: if for each network $G$ of size $n$ that satisfies the constraint, all induced subnetworks $G'$ of $G$ of size $n-1$ satisfy the constraint.
+  \item Can prune all candidate networks that have a subnetwork not satisfying the constraint.
+\end{itemize}
+
 \subsection{Graph classification}
 
-\subsection{Graph clustering}
+\textbf{Introduction}
+\begin{itemize}
+  \item Given two (or more) collections of labelled graphs, one for each of the relevant classes.
+  \item E.g. collections of program flow graphs to distinguish faulty runs from correct ones
+\end{itemize}
 
-\subsection{Graph evolution}
+\subsubsection{Feature-based Graph Classification}
+\begin{itemize}
+  \item Define set of graph features
+  \begin{itemize}
+    \item global features such as diameter, degree distribution
+    \item local features such as occurence of certin subgraphs 
+  \end{itemize}
+
+  \item Choice of relevant subgraphs
+  \begin{itemize}
+    \item based on domain knowledge, e.g. domain expert
+    \item based on frequency, e.g. pattern mining algorithm
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{Kernel-based Graph Classification}
+\begin{itemize}
+  \item Kernel-based approach
+  \begin{itemize}
+    \item Map two graphs x and $x'$ into feature space via function $\Phi$
+    \item Compute similarity (inner product) in feature space $$<\Phi(x), \Phi(x')>$$
+    \item Kernel $k$ avoids actual computation of feature vectors $$k(x, x') = <\Phi(x), \Phi(x')>$$
+  \end{itemize}
+
+  \item Grpah kernels should capture relevant graph features and be efficient to compute
+  \item Employ SVM or other kernel-based classifier
+\end{itemize}
+
+
+\subsection{Graph Clustering}
+\textbf{Introduction}
+\begin{itemize}
+  \item Group nodes into clusters such that nodes within a cluster have similar relationships (edges) while nodes in different clusters have dissimilar relationships.
+  \item Compared to graph classification: unsupervised
+  \item Compared to graph pattern mining: global patterns, typically every node belongs to exactly one cluster
+\end{itemize}
+
+\subsubsection{Hierarchical Clustering}
+\textbf{Divisive Hierarchical Clustering}
+\begin{itemize}
+  \item For every edge, compute its betweenness.
+  \item Remove the edge with the highest betweenness, then recompute the edge betweenness
+  \item Repeat these two steps until no more edge exists or until specified number of cluster produced
+  \item Runtime $O(m^2n)$ where $m = |E|$ and $n = |V|$
+  \item The method produces meaningful communities, but does not scale to large networks
+  \item Divisive hierarchical algorithm always produces a clustering, whether there is some natural cluster structure or not.
+\end{itemize}
+
+\textbf{Agglomerative Hierarchical Clustering}
+\begin{itemize}
+  \item Define the modularity of a partitioning to measure its meaningfulness (deviation from randomness).
+  \item $e_{ij}$: percentage of edges between partitions (clusters) i and j $$a_i = \sum_j {e_{ij}}$$
+  \item Modualrity $$Q = \sum_i (e_{ii} - a_i^2)$$
+  \item Start with singleton clusters.
+  \item In each step, perform the merge of two clusters that leads to the largest increase of the modularity.
+  \item Terminate when no more merges improve modularity or when specified number of clusters reached.
+  \item Need to consider only connected pairs of clusters.
+  \item Runtime $O((m+n) n)$ where $m = |E|$ and $n = |V|$
+  \item Scales much better than divisive algorithm, clustering quality is quite comparable.
+\end{itemize}
+
+\subsubsection{Graph Cuts}
+\begin{itemize}
+  \item Graph cut: set of edges whose removal partitions the set of vertices V into two (disconnected) sets S and T.
+  \item Cost of a cut: the sum of the weights of the cut edges.
+  \item Edge weights can be derived from node attributes, e.g. similarity of attributes (attribute vectors).
+  \item Minimum cut is a cut with minimum cost.
+  \item Minimum cut tends to cut off very small, isolated components.
+  \item Normalized cut $$\frac{cut(A, B)}{assoc(A, V)} + \frac{cut(A, B)}{assoc(B, V)}$$
+  where $assoc(A, V)$ =  sum of weights of all edges in V that touch A
+  \item Minimum normalized cut problem is NP-hard
+  \item But approximation can be computed by solving generalized eigenvalue problem.
+\end{itemize}
+
+\subsubsection{Block Models}
+\begin{itemize}
+  \item Actors in a social network are structurally equivalent if they have identical relational ties to and from all the actors in a network.
+  \item Partition V into subsets of nodes that have the same relationships i.e. edges to the same subset of $V$
+  \item Graph represented as sociomatrix
+  \item Partitions are called blocks
+\end{itemize}
+
+\textbf{CONCOR Algorithm}
+\begin{itemize}
+  \item repeated calculations of correleations between rows (or columns) will eventualy result in a correlation matrix consisting of only +1 and -1
+  
+  \item Algorithm
+  \begin{itemize}
+    \item calculate correlation matrix $C_1$ from sociomatrix
+    \item calculate correlation matrix $C_2$ from $C_1$
+    \item iterate until the entries are either +1 or -1
+  \end{itemize}
+\end{itemize}
+
+\textbf{Stochastic Block Models}
+\begin{itemize}
+  \item Requirement of structural equivalence often too strict.
+  \item Relax to stochastic equivalence:
+  \begin{itemize}
+    \item Two actors are stochastically equivalent if the actors are exchangeable with respect to the probability distribution.
+  \end{itemize}
+\end{itemize}
+
+\textbf{Generative Model}
+\begin{itemize}
+  \item Assign nodes to clusters $$z| \gamma \sim CPR(\gamma)$$
+  \item Determine link (edge) probability between clusters $$\eta_{ab} | \alpha, \beta \sim Beta(\alpha, \beta)$$
+  \item Determine edges between nodes $$R_{ij} | z, \eta \sim Bernoulli(\eta_{z_i}{z_j})$$
+  \item Assumption: edges conditionally independent given cluster assignments
+  \item Prior $P(z)$ assigns a probability to all possible partitions of the nodes
+  \item Find $z$ that maximizes $P(z|R)$
+  \begin{itemize}
+    \item $P(z|R) \propto P(R|z)P(z)$
+    \item $P(R|z) = \prod_{ab} \frac{B(m_{ab} + \alpha, \bar m_{ab} + \beta)}{B(\alpha, \beta)}$
+    \item where $m_{ab}$ is the number of edges between clusters $a$ and $b$ and $\bar m_{ab}$ is the number of missing edges betwwen clusters $a$ and $b$ and B(..., ...) is the Beta function.
+  \end{itemize}
+  \item Sample from the posterior P(z|R) using Markov Chain Monte Carlo
+  
+  \item Possible moves:
+  \begin{itemize}
+    \item move a node from one cluster to another
+    \item split a cluster
+    \item merge two clusters
+  \end{itemize}
+
+  \item At the end, $\eta_{ab}$ can be recovered
+\end{itemize}
+
+\subsection{Graph Evolution}
+\subsubsection{Generative Models}
+\begin{itemize}
+  \item Erdos Renyi Model
+  \begin{itemize}
+    \item connect each pair of nodes with probability $p$
+    \item Lots of theory, but does not produce power law degree distribution.
+  \end{itemize}
+
+  \item Preferential Attachment Model (directed graph)
+  \begin{itemize}
+    \item Add a new node, create m out-links to existing nodes.
+    \item Probability of linking an existing node is proportional to its degree.
+    \item Produces power law in-degree distribution but all nodes have the same out-degree.
+  \end{itemize}
+
+  \item Copy Model
+  \begin{itemize}
+    \item Add a node and choose k, the number of edges to add.
+    \item With probability $\beta$, select $k$ random vertices and link to them.
+    \item With probability $1-\beta$, edges are copied from a randomly chosen node.
+    \item Generates power law degree distributions with exponent $1/(1- \beta)$ (Generate communities).
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{Diffusion Models}
+\textbf{Introduction}
+\begin{itemize}
+  \item Each edge $(u,v)$ has probability $p_{uv}$ or weight $w_{uv}$
+  \item Initially, some nodes are active (e.g. a, d, e, g, i)
+  \item Question: which nodes will be active at some later time?
+\end{itemize}
+
+\textbf{Model}
+\begin{itemize}
+  \item Linear Threshold Model
+  \begin{itemize}
+    \item Each node has a threshold $t$
+    \item Node $u$ is activated when $\sum_{v \in active(u)} w_{uv} > t$, where $active(u)$ are the active neighbors of $u$
+    \item Deterministic activation
+    \item Discrete time: sequence of time stamps t1,t2,t3,...
+    \item At every time stamp $t_i$ , test each node whether it becomes active based on the activity status of the nodes at time $t_{i-1}$.
+  \end{itemize}
+
+  \item Independent Contagion Model
+  \begin{itemize}
+    \item Discrete time.
+    \item When node $u$ becomes active, it activates each of its neighbors $v$ with probability $p_{uv}$ .
+    \item A node has only one chance to influence its neighbors.
+    \item Probabilistic activation.
+  \end{itemize}
+\end{itemize}
+
+\textbf{Application}
+\begin{itemize}
+  \item Viral Marketing
+  \item Influence Maximization
+  
+  \item Role of Communities
+  \begin{itemize}
+    \item Consider connectedness of friends.
+    \item E.g. x and y have both three friends in the community
+    \item Who is more likely to join the community?
+    \begin{itemize}
+      \item Information argument, unconnected friends give independent support.
+      \item Social capital argument, safety / trust advantage in having friends who know each other.
+      \item In LiveJournal, community joining probability increases with more connections among friends in community.
+    \end{itemize}
+
+  \end{itemize}
+
+\end{itemize}
 
 \end{document}
