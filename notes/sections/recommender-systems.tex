@@ -1,0 +1,275 @@
+\documentclass[../notes.tex]{subfiles}
+
+\begin{document}
+
+\section{Recommender Systems}
+
+\subsection{Introduction}
+\subsubsection{Motivation}
+\begin{itemize}
+  \item Users want to have personalized results, but are not willing to spend a lot of time to specify their personal information needs.
+  \item Recommender systems automatically identify information relevant for a given user, learning from available data.
+  \item Data
+  \begin{itemize}
+    \item user behaviour: Boolean data (clicks, views, purchases), Integer data (ratings)
+    \item user profiles: (demographic attributes, list of interests, ...)
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{Tasks}
+\begin{itemize}
+  \item Rating prediction: Predict the rating of target user for target item, e.g. predict Joe’s rating for Titanic.
+  \item Top-N item recommendation: Predict the top-N highest-rated items among the items not yet rated by target user.
+  \item Friend recommendation (only for social network): Predict the top-N users to which the target user is most likely to connect.
+\end{itemize}
+
+\subsubsection{Performance Evaluation}
+\begin{itemize}
+  \item Cross-validation on offline dataset
+  \begin{itemize}
+    \item Withold subset of ratings (test set)
+    \item Use remaining ratings to train recommender (traning set)
+    \item Compare the withold ratings against the predicted ratings, compute measure of prediction error
+  \end{itemize}
+
+  \item A/B test with online system
+  \begin{itemize}
+    \item Assign users randomly to one of two algorithms
+    \item Compute measure of business value, e.g. click-through rate, conversion rate, return rate of customers and profit
+  \end{itemize}
+
+  \item Measures for rating prediction
+  \begin{itemize}
+  \item Mean absolute error
+    $$MAE = \frac{1}{|Test|} \sum_{(u, i) \in Test} |\hat r_{u,i} - r_{u, i}|$$
+    \item Root mean square error
+    $$RMSE = \sqrt{\frac{\sum_{(u, i) \in Test} (\hat r_{u,i} - r_{u, i})^2}{|Test|}}$$
+  \end{itemize}
+
+  \item Measures for top-N recommendation
+  \begin{itemize}
+    \item TopN: set of the top-N recommendations (by algorithm)
+    \item TestTop: set of all elements of the test set that are among the top-N items for the user
+
+    $$Recall = \frac{|TopN \cap TestTop|}{|TestTop|}$$
+  \end{itemize}
+\end{itemize}
+
+\subsection{Content-based Recommendation}
+\subsubsection{Introduction}
+\begin{itemize}
+  \item Set of items I, set of users U
+  \item User profiles: describing the users' tastes, preferences and needs 
+  \item Item profiles: characterizing the content of item
+  \item Approach1: Boolean rating prediction can be formulated as a classification task, but unusual approach.
+  \item Approach2: Top-N recommendation by ranking items w.r.t. similarity of item profiles and user profile 
+\end{itemize}
+
+\subsubsection{Top-N Recommendation}
+\textbf{Item Profile}
+\begin{itemize}
+  \item Item profile: typically frequencies of k selected keywords.
+  \item $f_{i,j}$: frequency of keyword $i$ in item $j$
+  \item $n_i$: number of items contaning keyword $i$
+  \item Term frequency $$TF_{i,j} = \frac{f_{i,j}}{max_z f_{z,j}}$$
+  \item Inverse document frequcny $$IDF_i = log(\frac{M}{n_i})$$
+  \item $$w_{i,j} = TF_{i,j} \cdot IDF_i$$
+  \item Profile for item $i$: $$content(i) = (w_{1,i}, ..., w_{k,i})$$
+\end{itemize}
+
+\textbf{User Profile}
+\begin{itemize}
+  \item Typically importance or frequencies of keywords, e.g. aggregation of profiles of items liked by user. $$contentBasedProfile(u) = (w_{1,u}, ..., w_{k,u})$$
+  \item Similarity of user $i$ and user $u$: $$sim(u,i) = \frac{\sum_{l=1}^{k} w_{l,u} w_{l,i}}{\sqrt{\sum_{l=1}^{k} w_{l,u}^2}\sqrt{\sum_{l=1}^{k} w_{l,i}^2}}$$
+\end{itemize}
+
+\subsection{Collaborative Filtering}
+\subsubsection{Introduction}
+\begin{itemize}
+  \item Set of items I, set of users U
+  \item User rate items
+  \item No need for information about content of items or attributes of users (good for privacy).
+  \item Users with similar ratings on some items are likely to have similar ratings on further item.
+  \item Items which are rated similarly by some users are likely to have similar ratings by further users.
+  \item Two paradigms: memory-based (lazy-learning) and model-based (eager learning)
+\end{itemize}
+
+\subsubsection{Memory-based Methods}
+\begin{itemize}
+  \item User-based CF
+  \begin{itemize}
+    \item Find users with similar rating profiles
+    \item Aggregate their ratings for item i to predict unknown rating $r_{u,i}$
+  \end{itemize}
+
+  \item Item-based CF
+  \begin{itemize}
+    \item Find items with similar rating profiles
+    \item Aggregate their ratings by user u to predict unknown rating  $r_{u,i}$
+  \end{itemize}
+
+  \item Issues
+  \begin{itemize}
+    \item How to define user/item similarity?
+    \item How many similar users/items?
+    \item How to aggregate the ratings?
+  \end{itemize}
+
+  \item Definition
+  \begin{itemize}
+    \item $r_{u,i}:$ (observed) rating of user $u$ for item $i$
+    \item $\bar r_u:$ mean rating of user $u$
+    \item $\hat r_{u,i}:$ predicted rating of user $u$ for item $i$
+    \item $N(u):$ set of users similar to user $u$ (who have rated item $i$)
+    \item $sim(u,v):$ similarity of users $u$ and $v$
+    \item $\kappa:$ nomarlization factor
+  \end{itemize}
+
+  \item Different users use the ratings scale differently, thus we need to normalize ratings by the mean rating of a user/item
+  \item The more similar a user/item, the higher the weiht of the rating
+  \item Rating prediction for user-based CF $$\hat r_{u,i} = \bar r_{u} + \kappa \sum_{v \in N(u)}sim(u,v)(r_{v,i} - \bar r_v)$$
+
+  \item How to define similarity of users
+  \begin{itemize}
+    \item $I_{uv}:$ set of items rated by both users $u$ and $v$
+    \item Pearson correlation coefficient
+    $$sim(u,v) = \frac{\sum_{i \in I_{uv}} (r_{u,i} - \hat r_u) ((r_{v,i} - \hat r_v))}{\sqrt{\sum_{i \in I_{uv}} (r_{u,i} - \hat r_u)^2 ((r_{v,i} - \hat r_v))^2}}$$
+    \item Cosine similarity
+    $$sim(u,v) = \frac{\sum_{i \in I_{uv}} r_{u,i} r_{v,i}}{\sqrt{\sum_{i \in I_{uv}} r_{u,i}^2 \sqrt{\sum_{i \in I_{uv}} r_{v,i}^2}}}$$
+  \end{itemize}
+
+  \item Efficiency issues
+  \begin{itemize}
+    \item Computation of the $k$ most similar users/items is expensive.
+    \item Without index support, runtime is $O(n)$
+  \end{itemize}
+
+  \item Clustering-based approach
+  \begin{itemize}
+    \item Cluster items/users
+    \item Data structure for efficient lookup of clusters
+    \item Aggregate the ratings within the user/item cluster
+  \end{itemize}
+
+  \item Modification of k-means
+  \begin{itemize}
+    \item When computing centroids, consider only the known ratings.
+    \item When computing distances to centroids, consider only known ratings and normalize by the number of those ratings.
+  \end{itemize}
+\end{itemize}
+
+\subsection{Matrix Factorization}
+
+\textbf{Introduction}
+\begin{itemize}
+  \item A model-based approach to CF, which assumes that the latent factors represent unobserved preferences of users and characteristics of items.
+  \item Non-negative MF \\ $R \approx UV^T$, where U are the user factors and V the item factors
+  \item Objective $$ argmin_{U,V}||R - UV^T||^2, U \ge 0, V \ge 0$$ where $||.||^2$ denotes the squared Frobenius norm.
+\end{itemize}
+
+\subsubsection{Probabilistic MF}
+\begin{itemize}
+  \item Accurate and efficient rating prediction for sparse datasets
+  \item Assume that ratings are generated from a linear probabilistic model with Gaussian observation noise:
+  $$p(R|U,V,\sigma^2) = \prod_{i=1}^{N} \prod_{i=1}^{M}$$
+\end{itemize}
+
+\subsection{Link Recommendation}
+\subsubsection{Introduction}
+
+\textbf{Problem definitions}
+\begin{itemize}
+  \item Given a user pair (u,v), estimate the probability of creation of the link $u \rightarrow v$.
+  \item Given a user $u$, recommend a list of top users for $u$ to connect to
+\end{itemize}
+
+\subsubsection{Memory-based Methods}
+\begin{itemize}
+  \item Explore the social network starting from user $u$, for which links shall be predicted
+  \item Rank links to users $v$ based on the network-based similarity between $u$ and $v$.
+\end{itemize}
+
+\textbf{Topology-based Methods}
+\begin{itemize}
+  \item Measure similarity based on the direct neighbors of users $u$ and $v$ (local measure).
+  \item Common neighbors: $$score(A,B) = |N_A \cap N_B|$$
+  \item Jaccard coefficient: $$score(A, B) = \frac{|N_A \cap N_B|}{|N_A \cup N_B|}$$
+  \item Adamic \& Adar score: $$score(A,B) = \sum_{C \in N_A \cap N_B} \frac{1}{log|N_C|}$$
+  \item Preferential attachment (initially propsed for modeling network growth) $$score(A,B) = |N_A|\cdot|N_B|$$
+  \item SimRank (two users are similar to the extent that they are joined to similar neighbors)
+  $$score(A,B) = \gamma \frac{\sum_{x \in N_A} \sum_{y \in N_B} score(x, y)}{|N_A| \cdot |N_B|}$$
+  $$score(A,B) = 1$$
+\end{itemize}
+
+\textbf{Path-based Methods}
+\begin{itemize}
+  \item Measure similarity, based on number of paths between $A$ and $B$
+  \item $score(A,B)$: average number of steps for a random walk from A to B $$score(A,B) = \sum_{l=1}^{\infty} (\beta^l\cdot paths^{l}_{A,B})$$
+  \item where $paths^{l}_{A,B}$ is the number of paths of length $l$ from $A$ to $B$ 
+  \item Typically consider only paths up to a certain maximum length (global measure)
+  \item More accurate but less efficient
+  \item Random walk with restart
+  \begin{itemize}
+    \item A random walk starts from user $A$
+    \item At each step, with probability $\alpha$ the random walk restarts
+    \item $score(A,B)$: probability of being at user $B$ during random walk from $A$
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{Model-based Methods}
+\begin{itemize}
+  \item Learn a model that explains the generation of new links
+  \item Typically consider only paths to a certain maximum length (global measure)
+\end{itemize}
+
+\textbf{Matrix Factorization}
+\begin{itemize}
+  \item Model-based approach to $CF$
+\end{itemize}
+
+
+\subsection{Research Issues in Recommender Systems}
+
+\textbf{Recommendation in Social Networks}
+\begin{itemize}
+  \item Social influence and selection
+  \begin{itemize}
+    \item Preferences of friends are more likely to be similar than those of two random users
+    \item How to model social influence and selection in a recommender system
+  \end{itemize}
+
+  \item Social influence can be context-specific
+  \item Distinguish strong and weak ties:
+  \begin{itemize}
+    \item Strong ties: within community
+    \item Weak ties: across communities
+  \end{itemize}
+\end{itemize}
+
+\textbf{Recommendation in Location-based Networks}
+\begin{itemize}
+  \item Users and items are embedded in a geographical (2-dimensional) space.
+  \item Geographical influence
+  \begin{itemize}
+    \item Users are more likely to check-in at nearby locations
+    \item Nearby locations are similar to each other
+  \end{itemize}
+
+  \item Friends may not live near to each other
+  \begin{itemize}
+    \item They have similar interests.
+    \item But they may check-in at different locations
+  \end{itemize}
+
+  \item How to model geographical influence in a recommender system?
+\end{itemize}
+
+\textbf{Privacy-Preserving Recommendation}
+\begin{itemize}
+  \item Recommender systems allow effective personalization of information.
+  \item But recommender systems threaten the privacy of users, since they often use private user data.
+  \item User should be informed about the privacy implications and should be able to choose their own trade-off between personalization and privacy
+  \item How can recommender systems inform users in an understandable manner about privacy issues and suppport different tradeoffs for different users?
+\end{itemize}
+
+\end{document}
