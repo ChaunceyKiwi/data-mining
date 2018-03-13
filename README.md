@@ -18,3 +18,6 @@ Course-based learning of data mining knowledge
 7. Graph mining and social network analysis
 8. (Optional: recommender systems)
 9. Outlook
+
+## Mindnode Graph
+![mindnode-graph](./data-mining-graph.png)
