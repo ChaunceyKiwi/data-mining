@@ -20,4 +20,4 @@ Course-based learning of data mining knowledge
 9. Outlook
 
 ## Mindnode Graph
-![mindnode-graph](./data-mining-graph.png)
+<img src="./data-mining-graph.png" alt="alt text" height="1000px">
